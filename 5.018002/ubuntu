@@ -1,0 +1,48 @@
+#!/bin/bash
+
+source lib/core.sh
+
+os() {
+  installPackages() {
+    local packages=("curl" "libssl-dev")
+    runApt "${packages[@]}"
+  }
+
+  local commands=(info updateApt installPackages cleanApt)
+  run "${commands[@]}"
+}
+
+install() {
+  dirs() {
+    sudo mkdir -p /opt/perl5/dists
+    sudo mkdir -p /opt/perl5/build
+  }
+
+  downloadPerlbrew() {
+    curl -L http://install.perlbrew.pl | bash    
+  }
+
+  profile() {
+    printf "export PERLBREW_HOME=/opt/.perlbrew\n" >> ~/.bashrc
+    printf "source /opt/perl5/etc/bashrc\n" >> ~/.bashrc
+  }
+
+  installPerl() {
+    shell "perlbrew install $PERL_VER --switch -n -j 4"
+  }
+
+  installCpanm() {
+    shell "perlbrew install-cpanm"
+  }
+
+  local commands=(dirs downloadPerlbrew profile installPerl installCpanm)
+  run "${commands[@]}"
+}
+
+main() {
+  local commands=(os install)
+  run "${commands[@]}"
+  catch
+}
+
+main
